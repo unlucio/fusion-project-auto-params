@@ -1,0 +1,38 @@
+[
+    {
+        "name": "layer_height",
+        "value": "0.2mm",
+        "unit": "mm",
+        "comment": "Slicing layer height"
+    },
+    {
+        "name": "nozzle_width",
+        "value": "0.4mm",
+        "unit": "mm",
+        "comment": "Nozzle diameter"
+    },
+    {
+        "name": "wall",
+        "value": "nozzle_width*3",
+        "unit": "mm",
+        "comment": "Wall thickness"
+    },
+    {
+        "name": "top",
+        "value": "layer_height*5",
+        "unit": "mm",
+        "comment": "Top shell thickness"
+    },
+    {
+        "name": "bottom",
+        "value": "layer_height*3",
+        "unit": "mm",
+        "comment": "Bottom shell thickness"
+    },
+    {
+        "name": "clearance",
+        "value": "0.05mm",
+        "unit": "mm",
+        "comment": "Fit tolerance"
+    }
+]
