@@ -1,0 +1,88 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # Push to main: build the zip and publish/update a GitHub Release tagged
+  # from the manifest's version field. No manual tagging required.
+  release-main:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read version from manifest
+        id: version
+        run: echo "tag=v$(jq -r .version "ProjectAutoParams.manifest")" >> "$GITHUB_OUTPUT"
+
+      # git archive with a prefix reproduces the exact `ProjectAutoParams/` folder
+      # name Fusion requires (must match the .py/.manifest base name), regardless
+      # of what this repository itself is named on GitHub.
+      - name: Build release zip
+        run: git archive --format=zip --prefix="ProjectAutoParams/" -o "ProjectAutoParams.zip" HEAD
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.version.outputs.tag }}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "ProjectAutoParams.zip" --clobber
+          else
+            gh release create "$tag" "ProjectAutoParams.zip" --title "$tag" --generate-notes
+          fi
+
+  # Push to any other branch only builds a test zip while a pull request for
+  # that branch is open (this job triggers on pull_request, not bare push).
+  # The zip is attached to a prerelease and linked in a PR comment so testers
+  # get a direct download, no Actions-artifact login required.
+  build-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build test zip
+        run: git archive --format=zip --prefix="ProjectAutoParams/" -o "ProjectAutoParams.zip" HEAD
+
+      - name: Publish PR test build
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="pr-${{ github.event.pull_request.number }}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "ProjectAutoParams.zip" --clobber
+          else
+            gh release create "$tag" "ProjectAutoParams.zip" \
+              --title "PR #${{ github.event.pull_request.number }} test build" \
+              --prerelease --notes "Automated test build for this pull request."
+          fi
+          url=$(gh release view "$tag" --json assets --jq '.assets[] | select(.name == "ProjectAutoParams.zip") | .browser_download_url')
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Link zip in PR comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          marker="<!-- project-auto-params-test-build -->"
+          body="$marker
+          Test build ready: [ProjectAutoParams.zip](${{ steps.publish.outputs.url }})"
+          comment_id=$(gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            --jq '.[] | select(.body | startswith("<!-- project-auto-params-test-build -->")) | .id' | head -n1)
+          if [ -n "$comment_id" ]; then
+            gh api -X PATCH "repos/${{ github.repository }}/issues/comments/$comment_id" -f body="$body"
+          else
+            gh pr comment "${{ github.event.pull_request.number }}" --body "$body"
+          fi

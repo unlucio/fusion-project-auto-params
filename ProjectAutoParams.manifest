@@ -1,0 +1,13 @@
+{
+	"autodeskProduct":	"Fusion",
+	"type":	"addin",
+	"author":	"unLucio",
+	"description":	{
+		"":	"Automatically sets your params of choice in every new project"
+	},
+	"version":	"1.0.0",
+	"runOnStartup":	false,
+	"supportedOS":	"windows|mac",
+	"editEnabled":	true,
+	"iconFilename":	"AddInIcon.svg"
+}
