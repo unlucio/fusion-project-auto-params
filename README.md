@@ -25,9 +25,9 @@ so you don't have to type them in by hand each time.
 Download the latest `ProjectAutoParams.zip` from the
 [Releases page](../../releases/latest) and unzip it. You'll get a
 `ProjectAutoParams` folder (containing `ProjectAutoParams.py`,
-`ProjectAutoParams.manifest`, `AddInIcon.svg`, `LICENSE`, `params.json`, and this
-`README.md`), already named exactly as Fusion requires. Then install it with
-either method below.
+`ProjectAutoParams.manifest`, `AddInIcon.svg`, `LICENSE`, `params.json`, the
+`resources/` icons, and this `README.md`), already named exactly as Fusion
+requires. Then install it with either method below.
 
 ### Option A: from Fusion's Scripts and Add-Ins dialog (easiest, no folder-hunting)
 
@@ -72,7 +72,7 @@ at the end of the **Utilities** tab's toolbar.
    **Edit Auto Params**. A dialog opens with one row per parameter:
    - Type in any cell (**Name**, **Value**, **Unit**, **Comment**) to edit it.
    - Click **Add** in the dialog's toolbar to append a new blank row.
-   - Select a row, then click **Remove** to delete it.
+   - Click the minus icon at the right of a row to delete it.
    - Click **OK** to save. The next document you activate will pick up the new
      values.
 3. Existing parameters are never touched: if a design already has a parameter
